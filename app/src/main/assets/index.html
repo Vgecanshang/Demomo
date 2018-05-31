@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <script src="jquery-1.7.2.min.js" type="text/javascript"></script>
+    <title>文件总览</title>
+    <script type="text/javascript">
+        $(function(){
+            var now  = new Date();
+            var url = 'files' + '?' + now.getTime();
+            var $img = $("#fileImg");
+            //请求JSON数据
+            $.getJSON(url , function(data){
+                //编辑JSON数据
+                for(var i = 0 ; i < data.length ; i ++){
+                    //为每个对象生成一个li标签，添加页面的ul中
+                    var $li = $('<li>'+ data[i].name + '</li>');
+                    $li.attr("path" , data[i].path);
+                    $("#fileList").append($li);
+                    $li.click(function(){
+                        var p = "/files/" + $(this).attr("path");
+                        $img.attr("src", "/files/" + $(this).attr("path"))
+
+                    });
+                }
+
+
+            });
+
+
+        });
+
+
+    </script>
+</head>
+
+<body>
+    <p style="float:top">手机屏幕截图列表：</p>
+    <ul id="fileList" style="float:left;" ></ul>
+    <img id="fileImg" src="" style="width:auto;height:auto;float:right" align="bottom" alt="Smiley face">
+</body>
+
+</html>
