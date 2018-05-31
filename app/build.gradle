@@ -64,9 +64,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation 'com.github.Vgecanshang:LibraryTry:v1.0.8'  //1.0.6报错：因为我自定的JAR的minSDK太大， 放出来，和项目的minSdk冲突，需要去调整三方库的minSdk
+//    implementation 'com.github.Vgecanshang:LibraryTry:v1.0.8'  //1.0.6报错：因为我自定的JAR的minSDK太大， 放出来，和项目的minSdk冲突，需要去调整三方库的minSdk
     implementation 'com.koushikdutta.async:androidasync:2.+'
     implementation 'com.jakewharton:butterknife:8.4.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+    implementation 'com.github.Vgecanshang:CyongLibrary:v1.0.1'
 
 }

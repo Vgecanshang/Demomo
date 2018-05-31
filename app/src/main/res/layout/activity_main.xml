@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="在浏览器中通过如下地址访问文件列表：" />
+        android:text="在浏览器中通过如下地址访问文件列表：\n    (手机和电脑必须处在同一局域网内)" />
 
 
     <LinearLayout

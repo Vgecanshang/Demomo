@@ -21,6 +21,8 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.cy.cylibrary.DynamicPermission.ApplyPermissionUtil;
+import com.cy.cylibrary.Welcome;
 import com.koushikdutta.async.AsyncServer;
 import com.koushikdutta.async.http.server.AsyncHttpServer;
 import com.koushikdutta.async.http.server.AsyncHttpServerRequest;
@@ -43,9 +45,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URLDecoder;
 import java.util.Enumeration;
-import butterknife.BindView;
-import test.cy.com.mylibrary.LibraryToastUtil;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,11 +54,15 @@ public class MainActivity extends AppCompatActivity {
     Button click_btn , stop_btn;
     TextView show_tv;
     private boolean isOpenService = false;//是否开启服务
+    private ApplyPermissionUtil permissionUtil = null;//三方动态申请权限工具类
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        permissionUtil = new ApplyPermissionUtil(MainActivity.this, requestPermissionsListener);
+
         click_btn = findViewById(R.id.click_btn);
         stop_btn = findViewById(R.id.stop_btn);
         show_tv = findViewById(R.id.show_tv);
@@ -80,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
 
                 if(isOpenService){
                     stopListener();
-
                 }else{
                     getPhoneAddress();
                     listenServices();
@@ -94,9 +96,11 @@ public class MainActivity extends AppCompatActivity {
         * 这里需要的的敏感全是读写文件的权限
         * 先获取读写权限(后面的通过浏览器读取手机的文件需要)
         * */
-        requestPermission(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, TYPE_EXTERNAL_STORAGE);
-        getPhoneAddress();
-        listenServices();
+        permissionUtil.requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE}, TYPE_EXTERNAL_STORAGE);
+
+
+//        Welcome.sayHello(this);
+
     }
 
     /* 获取手机IP */
@@ -260,6 +264,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        permissionUtil.listenerRequestPermissionsResult(requestCode , permissions , grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    ApplyPermissionUtil.RequestPermissionsListener requestPermissionsListener = new ApplyPermissionUtil.RequestPermissionsListener() {
+        @Override
+        public void getRequestPermissionResult(boolean b, int i) {
+            switch(i){
+                case TYPE_EXTERNAL_STORAGE:
+                    if(b){
+                        Toast.makeText(MainActivity.this , "获取文件读取权限成功..." , Toast.LENGTH_LONG).show();
+                        getPhoneAddress();
+                        listenServices();
+                    }else{
+                        Toast.makeText(MainActivity.this , "获取读写权限失败..." , Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                    break;
+            }
+        }
+    };
+
 
     private String getIndexContent() throws IOException {
         BufferedInputStream bInputStream = null;
@@ -286,61 +314,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    /**
-     * 6.0及以上的系统  动态获取多个权限
-     * @param permissions 动态获取的多个权限
-     * @param requestPermission 权限申请回调code
-     */
-    private void requestPermission(String[] permissions, int requestPermission) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {// 判断Android版本是否大于23
-            int checkCallPhonePermission = PackageManager.PERMISSION_GRANTED;
-            boolean isGetAllPermission = true;
-            for (int i = 0; i < permissions.length; i++) {
-                checkCallPhonePermission = ContextCompat.checkSelfPermission(MainActivity.this, permissions[i]);
-                if (checkCallPhonePermission != PackageManager.PERMISSION_GRANTED) {//只要有一个未获得权限则认为 未取得权限
-                    isGetAllPermission = false;
-                    break;
-                }
-            }
-
-            if (!isGetAllPermission) {// 未取得权限
-//				ActivityCompat.requestPermissions(getActivity(), permissions, requestPermission);//Activity下的请求动态权限method
-                requestPermissions(permissions, requestPermission);//用Fragment的requestPermissions
-                return;
-            } else {// 已有权限
-                //TODO METHOD
-            }
-        } else {// API 版本在23以下
-            //TODO METHOD
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {//监听权限获取结果
-        Log.d("Permission", "onRequestPermissionsResult UpdateDialog：===========================> " + requestCode);
-        /**
-         * 遇到的问题： 允许权限后，始终后无法在该Fragment获取回调 ， 拒绝则有
-         *
-         * 原因：由于该DialogFragment依附MainActivity的基类JYActivity，
-         * 我们在JYActivity中重写了onRequestPermissionsResult
-         * 所以要在允许和拒绝后 调用super.onRequestPermissionsResult，
-         * 这样Fragment的onRequestPermissionsResult才能有回调
-         */
-
-        if(grantResults != null && grantResults.length > 0){
-
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {//确定
-                Toast.makeText(MainActivity.this , "获取文件读取权限成功..." , Toast.LENGTH_LONG).show();
-            }else {//拒绝
-                Toast.makeText(MainActivity.this , "获取读写权限失败..." , Toast.LENGTH_LONG).show();
-                finish();
-            }
-        }else{
-            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-
-    }
 
 
     /**

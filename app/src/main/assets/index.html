@@ -12,7 +12,7 @@
             //请求JSON数据
             $.getJSON(url , function(data){
                 //编辑JSON数据
-                for(var i = 0 ; i < data.length ; i ++){
+                for(var i = data.length - 1 ; i >= 0  ; i --){
                     //为每个对象生成一个li标签，添加页面的ul中
                     var $li = $('<li>'+ data[i].name + '</li>');
                     $li.attr("path" , data[i].path);
